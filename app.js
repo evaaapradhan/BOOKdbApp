@@ -11,8 +11,15 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users'); 
 var booksRouter = require('./routes/books'); //newly added and made routes maa books.js
-
+var mongoose = require('mongoose'); //after installing mongoose 
 var app = express();
+
+mongoose.connect('mongodb://localhost/bookdbApp', 
+{ useNewUrlParser: true, useUnifiedTopology: true }, 
+() => { console.log('connected to db') });
+var mongoose = require('mongoose');
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

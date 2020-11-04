@@ -1,7 +1,7 @@
 var express = require('express');
-const { push } = require('../resources/books');
 var router = express.Router();
-var books = require('../resources/books');
+var books = require('../resources/books'); 
+let Books = require('../models/books');
 
 router.get('/add', function (req, res, next) {
     res.render('addBooks', {
@@ -9,31 +9,50 @@ router.get('/add', function (req, res, next) {
     });
 });
 
-router.post('/save',function(req,res) {
-   console.log('save function,,,,,',req.body)
-   books.push({...req.body, id: `00${books.length + 1}`})
-   res.redirect('/');
+router.post('/save', function(req, res, next) {
+   //console.log('save function,,,,,',req.body)
+   const book = new Books(req.body);
+   let promise = book.save();
+   promise.then(() => {
+       console.log('Book added')
+       res.redirect('/');
+   })
+   //books.push({...req.body, id: `00${books.length + 1}`})
 });
 
-router.get('/remove/:index', function (req, res) {
-    books.splice(req.params.index, 1);
-    res.redirect('/');
+router.get('/remove/:_id', function (req, res) {
+    Books.remove({ _id: req.params._id }, function() {
+        res.redirect('/');
+    })
+    //console.log(req.params.id); 
+      // books.splice(req.params.index, 1);
+    //res.redirect('/');
 });
 
 router.get('/edit/:_id', function (req, res) {
-    const book = books.find((book) => book._id === req.params._id);
-    res.render('editBooks', {
-        title: 'Edit book',
-        book
-    });
+    Books.findOne({_id: req.params._id}, function(err, book){
+        res.render('editBooks',{title: 'Edit book', book: book});
+    })
+    
+    // const book = books.find((book) => book._id === req.params._id);
+    // res.render('editBooks', {
+    //     title: 'Edit book',
+    //     book
+    // });
 });
 
-router.post('/edit/:_id', function(req,res){
-    books.splice(books.findIndex(book => book._id === req.params._id), 1, {...req.body, _id: req.params._id}); 
+//findOneandUpdate
+
+router.post('/saveEdit/:_id', function(req,res){
+    Books.findOneAndUpdate({ _id: req.params._id }, { $set: req.body }, function(err, book) {
+        console.log(book);
+        res.redirect('/');
+    })
+    // books.splice(books.findIndex(book => book._id === req.params._id), 1, {...req.body, _id: req.params._id}); 
     //{} .splice ma {} chai replace garna use gareko, splice add/remove garna use huncha hai
     //books.splice(req.params._id, 1, {...req.body, _id: req.params._id});  
     //you can do also do // let updatebook = books.findIndex(book => book._id === req.params._id 
-    res.redirect('/');
+    
 });
 
 //    if separate object banayera garney ho vaney 
@@ -45,4 +64,4 @@ router.post('/edit/:_id', function(req,res){
 //         return true;
 //     }
 
-module.exports = router
+module.exports = router;
